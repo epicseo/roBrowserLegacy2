@@ -34,3 +34,10 @@ intended to be surgical extensions of the existing systems (including the existi
   and all build scripts are unchanged.
 - Added this `CHANGES.md` to document every change in the derivative, per GPL-v3
   good practice.
+
+### Mobile UX
+
+- **Fixed on-screen "O" key button** (`src/UI/Components/MobileUI/MobileUI.js`). The
+  `#oButton` entry in the letter-key map was bound to keyCode `89` (the "Y" key, a
+  copy-paste duplicate of `#yButton`); corrected to `79` ("O"). Without this, the
+  MobileUI "O" button emitted "Y".
