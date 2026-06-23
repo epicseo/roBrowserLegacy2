@@ -41,3 +41,18 @@ intended to be surgical extensions of the existing systems (including the existi
   `#oButton` entry in the letter-key map was bound to keyCode `89` (the "Y" key, a
   copy-paste duplicate of `#yButton`); corrected to `79` ("O"). Without this, the
   MobileUI "O" button emitted "Y".
+
+### Stability
+
+- **WebSocket auto-reconnect with exponential backoff** (opt-in). Added a pure,
+  fully unit-tested `src/Network/ReconnectPolicy.js` (exponential backoff with cap,
+  optional jitter, max-attempts, reset) and wired it into the WebSocket SocketHelper
+  (`src/Network/SocketHelpers/WebSocket.js`): after an *unexpected* disconnect, the
+  transport reopens on a backoff schedule and surfaces an `onReconnect` hook. It is
+  enabled by `autoReconnect: true` in the config and is **off by default**, so the
+  legacy behaviour (notify `onClose`, no retry) is unchanged unless opted in. Unit
+  coverage: `tests/network/ReconnectPolicy.test.js`. Documented the option in
+  `applications/pwa/Config.js`.
+  - Scope note: the transport reconnects, but restoring an in-game RO session also
+    requires re-authentication (login→char→map handshake). Full in-game reconnect is
+    **UNVERIFIED** here and must be validated against a live server.
