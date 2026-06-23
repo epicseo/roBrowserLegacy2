@@ -651,8 +651,22 @@ async function copyPwaFiles() {
 	const start = Date.now();
 	const sharp = (await import('sharp')).default;
 	const bgPath = './src/UI/Components/Intro/images/background.jpg';
-	fs.copyFileSync('./applications/pwa/icon.png', dist + platform + '/icon.png');
+	const iconPath = './applications/pwa/icon.png';
+	fs.copyFileSync(iconPath, dist + platform + '/icon.png');
 	fs.copyFileSync('./applications/pwa/manifest.webmanifest', dist + platform + '/manifest.webmanifest');
+
+	// Generate the icon sizes a PWA needs to be installable (192 + 512) plus a
+	// maskable variant (icon padded into the central safe zone on an opaque
+	// background so launcher masks don't clip it).
+	await sharp(iconPath).resize(192, 192).png().toFile(dist + platform + '/icon-192.png');
+	await sharp(iconPath).resize(512, 512).png().toFile(dist + platform + '/icon-512.png');
+	await sharp(iconPath)
+		.resize(410, 410, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
+		.extend({ top: 51, bottom: 51, left: 51, right: 51, background: { r: 0, g: 0, b: 0, alpha: 1 } })
+		.flatten({ background: { r: 0, g: 0, b: 0 } })
+		.png()
+		.toFile(dist + platform + '/icon-512-maskable.png');
+
 	await sharp(bgPath)
 		.resize(1920, 1080)
 		.png()

@@ -68,3 +68,15 @@ intended to be surgical extensions of the existing systems (including the existi
   layer can classify them. Retry count is `assetMaxRetries` (default 2; set 0 to
   disable) — documented in `applications/pwa/Config.js`. Unit coverage:
   `tests/core/AssetRetry.test.js`.
+
+### PWA / offline
+
+- **Completed the PWA icon set and unified the theme colour.** The manifest
+  (`applications/pwa/manifest.webmanifest`) previously declared a single `144x144`
+  icon (the source `icon.png` is actually `450x450`). It now declares 192×192,
+  512×512 (`purpose: any`) and a 512×512 `maskable` icon, which are the sizes a
+  PWA needs to be installable. The builder (`applications/tools/builder-web.mjs`
+  `copyPwaFiles`) generates these with `sharp` at build time (same approach already
+  used for the screenshots), so no binaries are committed. The maskable icon pads
+  the source into the central safe zone on an opaque background. `theme_color` was
+  changed `#4169e1` → `#ff8cb5` to match the `theme-color` meta in the HTML.
