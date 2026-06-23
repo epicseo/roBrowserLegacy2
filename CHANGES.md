@@ -49,6 +49,13 @@ intended to be surgical extensions of the existing systems (including the existi
   deliberately excludes touch-capable laptops (primary pointer = fine); the existing
   first-touch handler stays as a fallback.
 
+- **Safe-area (notch / home-indicator) handling.** Added `viewport-fit=cover` to the
+  viewport meta of both mobile entry points (the builder-generated `index.html` in
+  `applications/tools/builder-web.mjs` and `applications/pwa/index.html`) and inset
+  the MobileUI control layer by `env(safe-area-inset-*)` (`MobileUI.css` `#MobileUI`
+  rule). The whole control overlay now shifts clear of the notch and home indicator;
+  a `0px` fallback makes it a no-op on devices/browsers without insets.
+
 ### Stability
 
 - **WebSocket auto-reconnect with exponential backoff** (opt-in). Added a pure,
