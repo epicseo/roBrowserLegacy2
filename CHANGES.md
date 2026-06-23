@@ -42,6 +42,13 @@ intended to be surgical extensions of the existing systems (including the existi
   copy-paste duplicate of `#yButton`); corrected to `79` ("O"). Without this, the
   MobileUI "O" button emitted "Y".
 
+- **Capability-based touch detection.** `Core/Mobile.js` now flags primarily-touch
+  devices at load via `matchMedia('(pointer: coarse)')` (new `Mobile.isTouchDevice()`,
+  also called from `Mobile.init()`), so the mobile UI appears immediately on phones
+  /tablets instead of only after the first touch. The `(pointer: coarse)` query
+  deliberately excludes touch-capable laptops (primary pointer = fine); the existing
+  first-touch handler stays as a fallback.
+
 ### Stability
 
 - **WebSocket auto-reconnect with exponential backoff** (opt-in). Added a pure,
