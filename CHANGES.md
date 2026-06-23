@@ -56,3 +56,15 @@ intended to be surgical extensions of the existing systems (including the existi
   - Scope note: the transport reconnects, but restoring an in-game RO session also
     requires re-authentication (login→char→map handshake). Full in-game reconnect is
     **UNVERIFIED** here and must be validated against a live server.
+
+- **Asset-load retry with backoff for transient failures.** Added
+  `src/Core/AssetRetry.js` (`isTransientError` + `withRetry`, both pure and
+  unit-tested) and wired it into `FileManager.getHTTP` (`src/Core/FileManager.js`):
+  the single-attempt loader was extracted to `_getHTTPOnce`, and transient failures
+  (5xx, offline blips, dropped sockets) are now retried with exponential backoff
+  (reusing `ReconnectPolicy`). Definitive failures (4xx, HTML "404 page", missing
+  files) still fail fast so the many optional files the client probes don't slow
+  loading. Error messages from `_getHTTPOnce` now carry the HTTP status so the retry
+  layer can classify them. Retry count is `assetMaxRetries` (default 2; set 0 to
+  disable) — documented in `applications/pwa/Config.js`. Unit coverage:
+  `tests/core/AssetRetry.test.js`.

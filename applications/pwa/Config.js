@@ -40,6 +40,9 @@ window.ROConfigBase = {
 	// re-authentication — validate against your server before relying on it.
 	autoReconnect: false,
 	// autoReconnectOptions: { baseDelay: 1000, factor: 2, maxDelay: 30000, maxAttempts: Infinity, jitter: 0.25 },
+	// Retries for transient asset-load failures (5xx / offline blips). 4xx and
+	// missing files fail fast and are not retried. Set 0 to disable.
+	assetMaxRetries: 2,
 	skipServerList: true,
 	skipIntro: false,
 	aura: {},
