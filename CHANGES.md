@@ -56,6 +56,14 @@ intended to be surgical extensions of the existing systems (including the existi
   rule). The whole control overlay now shifts clear of the notch and home indicator;
   a `0px` fallback makes it a no-op on devices/browsers without insets.
 
+- **Keyboard-safe chat input.** Added `src/UI/KeyboardInset.js`, which keeps a
+  focused field visible above the on-screen keyboard by translating its window up by
+  the visual-viewport overlap (via the `visualViewport` API) on focus and resetting
+  on blur. Wired into the ChatBox input (`src/UI/Components/ChatBox/ChatBox.js`). It
+  is a no-op without `visualViewport` or off touch sessions, and uses `transform`
+  only so it never disturbs the window's draggable position. Addresses the
+  long-standing "resize event on mobile keyboard bug" TODO in `Core/Mobile.js`.
+
 ### Stability
 
 - **WebSocket auto-reconnect with exponential backoff** (opt-in). Added a pure,
