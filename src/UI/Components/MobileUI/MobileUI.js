@@ -20,6 +20,7 @@ import Network from 'Network/NetworkManager.js';
 import PathFinding from 'Utils/PathFinding.js';
 import Altitude from 'Renderer/Map/Altitude.js';
 import Events from 'Core/Events.js';
+import Haptics from 'Core/Haptics.js';
 import htmlText from './MobileUI.html?raw';
 import cssText from './MobileUI.css?raw';
 import glMatrix from 'Vendors/gl-matrix.js';
@@ -203,14 +204,20 @@ MobileUI.init = function init() {
 	// Press effect for .buttons and .FButton
 	root.querySelectorAll('.buttons').forEach(btn => {
 		btn.addEventListener('mousedown', e => e.target.classList.add('pressed'));
-		btn.addEventListener('touchstart', e => e.target.classList.add('pressed'));
+		btn.addEventListener('touchstart', e => {
+			e.target.classList.add('pressed');
+			Haptics.play('tap');
+		});
 		btn.addEventListener('mouseup', e => e.target.classList.remove('pressed'));
 		btn.addEventListener('touchend', e => e.target.classList.remove('pressed'));
 	});
 
 	root.querySelectorAll('.FButton').forEach(btn => {
 		btn.addEventListener('mousedown', e => e.target.classList.add('pressed'));
-		btn.addEventListener('touchstart', e => e.target.classList.add('pressed'));
+		btn.addEventListener('touchstart', e => {
+			e.target.classList.add('pressed');
+			Haptics.play('skill');
+		});
 		btn.addEventListener('mouseup', e => e.target.classList.remove('pressed'));
 		btn.addEventListener('touchend', e => e.target.classList.remove('pressed'));
 	});
@@ -479,6 +486,7 @@ function toggleAutoFollow() {
  * Attacks a targeted enemy (if present)
  */
 function attackTargeted() {
+	Haptics.play('hit');
 	const main = Session.Entity;
 	let pkt;
 

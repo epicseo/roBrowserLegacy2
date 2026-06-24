@@ -47,6 +47,9 @@ window.ROConfigBase = {
 	// windows at native size; a number (e.g. 0.8) applies a fixed zoom; 'auto'
 	// derives a factor from the viewport. Validate drag/hit-testing on-device.
 	uiScale: 'off',
+	// Vibration feedback on touch actions (button taps, attack). Opt-in; only
+	// fires on touch devices that support the Vibration API.
+	haptics: false,
 	skipServerList: true,
 	skipIntro: false,
 	aura: {},

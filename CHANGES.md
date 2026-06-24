@@ -144,6 +144,14 @@ intended to be surgical extensions of the existing systems (including the existi
   (`createHTML` with the manifest), so normal/viewer builds and the Vite dev server
   are unaffected (avoiding HMR conflicts). Offline behaviour is on-device-validated.
 
+### Mobile-first features
+
+- **Haptic feedback (opt-in).** Added `src/Core/Haptics.js`, a `navigator.vibrate`
+  wrapper gated by capability + touch session + the `haptics` config (default off).
+  Wired into MobileUI touch actions (`MobileUI.js`): light tap on button presses, a
+  stronger pulse on skill-bar buttons, and an attack pulse. No-op on desktop or when
+  unsupported/disabled. Documented in `applications/pwa/Config.js`.
+
 ### Performance — investigation (no code change)
 
 - **Code-split investigation (measure-only).** Documented the bundle baseline and
