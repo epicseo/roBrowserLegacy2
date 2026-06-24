@@ -134,3 +134,12 @@ intended to be surgical extensions of the existing systems (including the existi
   used for the screenshots), so no binaries are committed. The maskable icon pads
   the source into the central safe zone on an opaque background. `theme_color` was
   changed `#4169e1` → `#ff8cb5` to match the `theme-color` meta in the HTML.
+
+- **Service worker for offline app-shell caching.** Added `applications/pwa/sw.js`,
+  a stale-while-revalidate worker that precaches a small app shell and runtime-caches
+  same-origin GETs (the app JS, etc.). Cross-origin requests pass through untouched,
+  so remote-client game assets and the wsProxy WebSocket are never intercepted. The
+  builder (`copyPwaFiles`) ships it to `dist/Web/sw.js` and injects a guarded
+  registration into the generated `index.html` **only for the PWA build**
+  (`createHTML` with the manifest), so normal/viewer builds and the Vite dev server
+  are unaffected (avoiding HMR conflicts). Offline behaviour is on-device-validated.

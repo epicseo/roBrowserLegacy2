@@ -167,6 +167,18 @@ async function compile(appName, isMinify) {
 function createHTML(includeManifest = false, buildArgs = {}, isAllBuild = false) {
 	const start = Date.now();
 	const manifest = includeManifest ? `<link rel="manifest" href="./manifest.webmanifest">` : ``;
+	// Register the service worker (offline app shell) only for the PWA build.
+	const swRegister = includeManifest
+		? `<script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('./sw.js').catch(function (e) {
+                    console.warn('SW registration failed:', e);
+                });
+            });
+        }
+        </script>`
+		: ``;
 
 	const appButtonMap = [
 		{ flag: 'O', app: 'ONLINE', label: 'Online' },
@@ -209,8 +221,9 @@ function createHTML(includeManifest = false, buildArgs = {}, isAllBuild = false)
         <meta property="og:type" content="website">    
         <meta property="og:locale" content="en_US">    
     
-        <link rel="apple-touch-icon" href="./icon.png">    
-        ${manifest}`;
+        <link rel="apple-touch-icon" href="./icon.png">
+        ${manifest}
+        ${swRegister}`;
 
 	let body;
 
@@ -654,6 +667,8 @@ async function copyPwaFiles() {
 	const iconPath = './applications/pwa/icon.png';
 	fs.copyFileSync(iconPath, dist + platform + '/icon.png');
 	fs.copyFileSync('./applications/pwa/manifest.webmanifest', dist + platform + '/manifest.webmanifest');
+	// Service worker for offline app-shell caching (registered by index.html).
+	fs.copyFileSync('./applications/pwa/sw.js', dist + platform + '/sw.js');
 
 	// Generate the icon sizes a PWA needs to be installable (192 + 512) plus a
 	// maskable variant (icon padded into the central safe zone on an opaque
