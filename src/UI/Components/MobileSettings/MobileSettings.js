@@ -33,7 +33,8 @@ const _preferences = Preferences.get(
 		y: 120,
 		haptics: false,
 		uiScale: 'off',
-		autoReconnect: false
+		autoReconnect: false,
+		leftHanded: false
 	},
 	1.0
 );
@@ -47,6 +48,7 @@ function applyStored() {
 	Configs.set('haptics', !!_preferences.haptics);
 	Configs.set('uiScale', _preferences.uiScale);
 	Configs.set('autoReconnect', !!_preferences.autoReconnect);
+	Configs.set('mobileLeftHanded', !!_preferences.leftHanded);
 	UIScale.refresh();
 }
 
@@ -93,6 +95,17 @@ MobileSettings.init = function init() {
 		});
 	}
 
+	const leftHanded = root.querySelector('#ms-lefthanded');
+	if (leftHanded) {
+		leftHanded.addEventListener('change', function () {
+			_preferences.leftHanded = this.checked;
+			Configs.set('mobileLeftHanded', this.checked);
+			// Decoupled from MobileUI (avoids an import cycle): MobileUI listens.
+			window.dispatchEvent(new Event('ragnatouch:mobilelayout'));
+			_preferences.save();
+		});
+	}
+
 	this.draggable('.titlebar');
 };
 
@@ -114,6 +127,7 @@ MobileSettings.onAppend = function onAppend() {
 	set('#ms-haptics', 'checked', !!_preferences.haptics);
 	set('#ms-uiscale', 'value', String(_preferences.uiScale));
 	set('#ms-reconnect', 'checked', !!_preferences.autoReconnect);
+	set('#ms-lefthanded', 'checked', !!_preferences.leftHanded);
 };
 
 /**

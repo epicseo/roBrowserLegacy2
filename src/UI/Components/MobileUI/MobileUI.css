@@ -553,3 +553,22 @@
 	touch-action: none;
 	cursor: grab;
 }
+
+/* Left-handed layout: mirror the joystick / action clusters and the side bars.
+   Applied only when #MobileUI carries the .swap-controls class (default off). */
+#MobileUI.swap-controls .joystick-container {
+	left: auto;
+	right: 10%;
+}
+#MobileUI.swap-controls #buttonContainer {
+	right: auto;
+	left: 10%;
+}
+#MobileUI.swap-controls #leftBar {
+	left: auto;
+	right: 1%;
+}
+#MobileUI.swap-controls #rightBar {
+	right: auto;
+	left: 1%;
+}

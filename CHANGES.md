@@ -154,6 +154,14 @@ intended to be surgical extensions of the existing systems (including the existi
   `serverTick` adjustment, which is left untouched. Updates each pong (~10 s
   keepalive cadence); shows `--` until the first reply.
 
+- **Customizable layout — left-handed mode.** Added a "Left-handed layout" toggle to
+  the mobile settings panel that mirrors the joystick / action-button clusters and the
+  side bars to the opposite edges (`MobileUI.css` `.swap-controls` rules, applied by a
+  `mobileLeftHanded` config). MobileUI applies it on init and reacts to a
+  `ragnatouch:mobilelayout` window event (decoupled from the panel to avoid an import
+  cycle). Default off — a no-op CSS class until enabled. Fuller drag-to-reposition
+  layout editing is a possible future extension.
+
 - **Mobile settings panel.** Added `src/UI/Components/MobileSettings/` (GUIComponent),
   a draggable panel that centralizes the RagnaTouch mobile toggles — haptics, UI
   scale and auto-reconnect — each writing to the runtime config (and refreshing the

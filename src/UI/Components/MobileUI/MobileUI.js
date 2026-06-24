@@ -8,6 +8,7 @@
 + */
 
 import Context from 'Core/Context.js';
+import Configs from 'Core/Configs.js';
 import UIManager from 'UI/UIManager.js';
 import GUIComponent from 'UI/GUIComponent.js';
 import Preferences from 'Core/Preferences.js';
@@ -231,7 +232,23 @@ MobileUI.init = function init() {
 	setupJoystick();
 	// Initialize the NPC Talk Button - MicromeX
 	setupTalkToNpcButton();
+
+	// Apply the persisted on-screen layout (e.g. left-handed) and react to
+	// changes made from the mobile settings panel.
+	applyLayout();
+	window.addEventListener('ragnatouch:mobilelayout', applyLayout);
 };
+
+/**
+ * Apply the on-screen control layout from config (e.g. left-handed swap).
+ */
+function applyLayout() {
+	const root = MobileUI.getRoot();
+	const el = root && root.querySelector('#MobileUI');
+	if (el) {
+		el.classList.toggle('swap-controls', !!Configs.get('mobileLeftHanded', false));
+	}
+}
 
 /**
  * Logs the key press to the console and performs the key press action.
