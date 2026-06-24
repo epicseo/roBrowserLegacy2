@@ -64,6 +64,20 @@ intended to be surgical extensions of the existing systems (including the existi
   only so it never disturbs the window's draggable position. Addresses the
   long-standing "resize event on mobile keyboard bug" TODO in `Core/Mobile.js`.
 
+- **Optional global UI scaling for small screens (opt-in, default off).** Added
+  `src/UI/UIScale.js`, which applies a uniform CSS `zoom` to each registered
+  component host so fixed-size RO windows can shrink to fit a phone. `zoom` is used
+  (not `transform: scale`) because it scales the layout box and the browser maps
+  pointer events through it, preserving drag and hit-testing. Both base classes are
+  wired (`GUIComponent.prepare` and `UIComponent.append` register their host) and the
+  scale recomputes on resize. Controlled by the `uiScale` config: `'off'` (default →
+  factor 1, hosts untouched, **no behavioural change**), a number for a fixed factor,
+  or `'auto'` to derive one from the viewport. Documented in
+  `applications/pwa/Config.js`.
+  - On-device validation required: the scaling↔drag/clamp/hit-testing interaction
+    across all windows cannot be verified in CI and is **UNVERIFIED** until tested on
+    a real device. This is why it ships off by default.
+
 ### Stability
 
 - **WebSocket auto-reconnect with exponential backoff** (opt-in). Added a pure,
