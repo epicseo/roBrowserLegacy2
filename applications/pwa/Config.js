@@ -34,6 +34,13 @@ window.ROConfigBase = {
 		// ADD PUBLIC TEST SERVERS HERE WITH _M _F REGISTRATION
 	],
 	packetDump: false,
+	// EXPERIMENTAL (default off; server validation required). Map (zone) session
+	// reconnect: on an unexpected map-server drop, offer a clean reconnect that
+	// re-runs the full Login -> Char -> Map flow (fresh AuthCode; no stored-token
+	// resume), and enable the send-side auth gate that refuses gameplay packets
+	// until the map session is re-authenticated. Validate against your server
+	// before enabling. See CHANGES.md.
+	experimentalReconnect: false,
 	// Retries for transient asset-load failures (5xx / offline blips). 4xx and
 	// missing files fail fast and are not retried. Set 0 to disable.
 	assetMaxRetries: 2,

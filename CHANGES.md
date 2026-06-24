@@ -112,6 +112,39 @@ intended to be surgical extensions of the existing systems (including the existi
     reconnect (transport reopen + login→char→map re-auth) is deferred to a separate
     task and must be validated against a live server.
 
+- **Map (zone) session reconnect — with a mandatory send-side auth gate**
+  (experimental, opt-in, **off by default**). The deferred follow-up above, brought
+  back as a single scoped unit: the recovery path and the safety gate ship together.
+  - **Send-side auth gate** (`src/Network/SendGate.js`, pure + unit-tested).
+    `NetworkManager` now tracks an explicit *map-session-authenticated* state,
+    distinct from transport-connected. It becomes true **only** when the map-accept
+    (`ZC_ACCEPT_ENTER`) is processed in `src/Engine/MapEngine.js`, and false on every
+    (re)connect and in `NetworkManager.onClose()`. While unauthenticated,
+    `sendPacket()` refuses gameplay (zone) packets — only the registered handshake
+    packets (the map-enter packet + the keepalive ping) and non-zone (login/char)
+    packets pass. This makes the "connected-but-unauthenticated zombie" that caused
+    the live-reconnect revert unrepresentable: gameplay can never be sent into a
+    dropped or not-yet-admitted session. Coverage: `tests/network/SendGate.test.js`
+    (regression/zombie guard + positive control + send-sink spy).
+  - **Recovery — Approach B (clean manual reconnect).** Phase 0 (does the server hold
+    a resumable map session within a usable grace window?) was **not** run in this
+    sandbox — there is no live server here — so the server-agnostic path was chosen:
+    on an unexpected map-server drop the client surfaces the drop and re-runs the full
+    Login→Char→Map flow with a fresh `AuthCode` (no socket re-attach, no stored-token
+    resume — what the official client does and what an unforgiving server supports).
+    Reuses the existing return-to-login (`GameEngine.reload()`); never bypasses
+    `onClose`.
+  - **`AuthCode` hygiene.** The in-memory session secret (`Session.AuthCode`) is now
+    cleared on every return-to-login (`GameEngine.reload()`); it is never persisted to
+    localStorage / IndexedDB.
+  - **Opt-in + experimental.** Gated by `experimentalReconnect` (default `false`) in
+    `applications/pwa/Config.js`. When off, behaviour is byte-identical to before (the
+    gate is inert). Stays experimental and **server-validation-gated**: the in-sandbox
+    tests validate client state only — induced-disconnect tests against a live server
+    (kill wsProxy mid-session; drop the network; exceed the grace window) must confirm
+    no gameplay packets enter a dead socket and the drop is surfaced before the flag is
+    enabled for real use.
+
 - **Asset-load retry with backoff for transient failures.** Added
   `src/Core/AssetRetry.js` (`isTransientError` + `withRetry`, both pure and
   unit-tested) and wired it into `FileManager.getHTTP` (`src/Core/FileManager.js`):
