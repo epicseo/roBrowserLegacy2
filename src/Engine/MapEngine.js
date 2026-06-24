@@ -222,6 +222,7 @@ class MapEngine {
 					}
 					SP.pingTime = ping.clientTime;
 					SP.returned = false;
+					SP.sentAt = Date.now(); // for the RTT measurement read by the HUD
 
 					Network.sendPacket(ping);
 				});
@@ -464,6 +465,12 @@ function onPong(pkt) {
 	SP.returned = true;
 	SP.pongTime = 0;
 	SP.value = SP.pongTime - SP.pingTime;
+
+	// Measured round-trip time for the HUD. Kept separate from the (legacy)
+	// serverTick adjustment below so we don't disturb movement timing.
+	if (SP.sentAt) {
+		SP.rtt = Date.now() - SP.sentAt;
+	}
 
 	Session.serverTick = pkt.time + SP.value / 2; // Adjust with half ping
 }

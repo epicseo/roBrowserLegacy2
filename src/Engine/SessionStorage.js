@@ -61,7 +61,9 @@ export default {
 		pingTime: 0,
 		pongTime: 0,
 		returned: false,
-		value: 0
+		value: 0,
+		sentAt: 0, // Date.now() when the last REQUEST_TIME was sent
+		rtt: 0 // measured round-trip time in ms (for the FPS/ping HUD)
 	},
 
 	serverTick: 0,

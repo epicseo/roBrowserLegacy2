@@ -146,6 +146,14 @@ intended to be surgical extensions of the existing systems (including the existi
 
 ### Mobile-first features
 
+- **FPS HUD now also shows ping (round-trip latency).** Extended the existing FPS
+  component (`src/UI/Components/FPS/`) with a `ms` readout. The latency is measured
+  correctly in `MapEngine.onPong` as `Date.now() - sentAt` (the previous `SP.value`
+  was always negative because `pongTime` is hardcoded to 0); the new `rtt`/`sentAt`
+  fields live on `Session.ping` and are kept **separate** from the movement-critical
+  `serverTick` adjustment, which is left untouched. Updates each pong (~10 s
+  keepalive cadence); shows `--` until the first reply.
+
 - **Haptic feedback (opt-in).** Added `src/Core/Haptics.js`, a `navigator.vibrate`
   wrapper gated by capability + touch session + the `haptics` config (default off).
   Wired into MobileUI touch actions (`MobileUI.js`): light tap on button presses, a
