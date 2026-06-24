@@ -143,3 +143,15 @@ intended to be surgical extensions of the existing systems (including the existi
   registration into the generated `index.html` **only for the PWA build**
   (`createHTML` with the manifest), so normal/viewer builds and the Vite dev server
   are unaffected (avoiding HMR conflicts). Offline behaviour is on-device-validated.
+
+### Performance — investigation (no code change)
+
+- **Code-split investigation (measure-only).** Documented the bundle baseline and
+  composition in [`doc/PERFORMANCE.md`](doc/PERFORMANCE.md). Headline finding: the 23
+  per-version packet-length files in `src/Network/Packets/` total **4.19 MB** of
+  source and are all imported statically (`PacketLength.js:14-36`), yet only one is
+  used per session — the single biggest code-split opportunity. It is **not**
+  implemented here because it requires making packet-length init async (threading
+  through the connection flow), switching the builder off single-file output (which
+  changes the deploy model), and careful regression testing of a REVIEW.md-critical
+  subsystem. Recommended as a dedicated, separately-approved task.
