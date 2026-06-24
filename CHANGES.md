@@ -78,6 +78,14 @@ intended to be surgical extensions of the existing systems (including the existi
     across all windows cannot be verified in CI and is **UNVERIFIED** until tested on
     a real device. This is why it ships off by default.
 
+- **Non-blocking startup (no external version fetch).** `applications/pwa/index.html`
+  previously blocked initialization on a `https://api.github.com/.../commits/master`
+  request (every load, rate-limited, and coupled to the upstream repo). It now
+  initializes immediately and takes the cache-busting `version` from the
+  operator-controlled config (`baseConfig.version`, falling back to a constant). The
+  `getJSON` helper and the GitHub dependency were removed. (The built PWA already used
+  the builder-generated HTML, which never did this fetch.)
+
 ### Stability
 
 - **WebSocket auto-reconnect with exponential backoff** (opt-in). Added a pure,

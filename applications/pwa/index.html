@@ -128,7 +128,7 @@
 				return target;
 			}
 
-			function initialize(gitHash) {
+			function initialize(version) {
 				// Merge Config.js defaults with Config.local.js overrides
 				var baseConfig = deepMerge({}, window.ROConfigBase || {});
 				if (window.ROConfigLocal) {
@@ -140,48 +140,19 @@
 					target: document.getElementById('robrowser'),
 					type: ROBrowser.TYPE[baseConfig.type || 'FRAME'],
 					application: ROBrowser.APP[baseConfig.application || 'ONLINE'],
-					version: gitHash
+					version: version || baseConfig.version || 'ragnatouch'
 				});
 				var RO = new ROBrowser(ROConfig);
 				RO.start();
 			}
 
-			var getJSON = function (url, callback) {
-				var xhr = new XMLHttpRequest();
-				xhr.open('GET', url, true);
-				xhr.responseType = 'json';
-				xhr.onload = function () {
-					var status = xhr.status;
-					if (status === 200) {
-						callback(null, xhr.response);
-					} else {
-						callback(status, xhr.response);
-					}
-				};
-				xhr.send();
-			};
-
+			// Start immediately — never block startup on an external request.
+			// `version` drives cache-busting and is operator-controlled via the
+			// `version` field in Config.js / Config.local.js (baseConfig.version).
 			window.addEventListener(
 				'load',
 				function () {
-					//Get latest GIT hash first then initialize
-					getJSON(
-						'https://api.github.com/repos/MrAntares/roBrowserLegacy/commits/master',
-						function (err, data) {
-							var gitHash = 'NO_INFO';
-							if (err !== null) {
-								console.warn('Error reading latest GIT hash.');
-							} else {
-								if (data && data.sha) {
-									gitHash = data.sha;
-									console.log('Latest GIT hash: ' + gitHash);
-								} else {
-									console.warn('No hash found in response');
-								}
-							}
-							initialize(gitHash);
-						}
-					);
+					initialize();
 				},
 				false
 			);
