@@ -98,18 +98,19 @@ intended to be surgical extensions of the existing systems (including the existi
 
 ### Stability
 
-- **WebSocket auto-reconnect with exponential backoff** (opt-in). Added a pure,
-  fully unit-tested `src/Network/ReconnectPolicy.js` (exponential backoff with cap,
-  optional jitter, max-attempts, reset) and wired it into the WebSocket SocketHelper
-  (`src/Network/SocketHelpers/WebSocket.js`): after an *unexpected* disconnect, the
-  transport reopens on a backoff schedule and surfaces an `onReconnect` hook. It is
-  enabled by `autoReconnect: true` in the config and is **off by default**, so the
-  legacy behaviour (notify `onClose`, no retry) is unchanged unless opted in. Unit
-  coverage: `tests/network/ReconnectPolicy.test.js`. Documented the option in
-  `applications/pwa/Config.js`.
-  - Scope note: the transport reconnects, but restoring an in-game RO session also
-    requires re-authentication (login→char→map handshake). Full in-game reconnect is
-    **UNVERIFIED** here and must be validated against a live server.
+- **Reconnection backoff policy (building block; live reconnect deferred).** Added a
+  pure, fully unit-tested `src/Network/ReconnectPolicy.js` (exponential backoff with
+  cap, optional jitter, max-attempts, reset). Unit coverage:
+  `tests/network/ReconnectPolicy.test.js`.
+  - Live WebSocket auto-reconnect was intentionally **not** wired in this PR. A code
+    review correctly noted that reopening the transport after a drop is unsafe on its
+    own: RO connections are authenticated per-socket, so without a re-authentication
+    path the client would sit "connected" on an unauthenticated socket instead of
+    surfacing the disconnect. `src/Network/SocketHelpers/WebSocket.js` therefore keeps
+    its original notify-`onClose`-and-stop behaviour, and `ReconnectPolicy` currently
+    serves only as the backoff source for asset-load retry (below). Full in-game
+    reconnect (transport reopen + login→char→map re-auth) is deferred to a separate
+    task and must be validated against a live server.
 
 - **Asset-load retry with backoff for transient failures.** Added
   `src/Core/AssetRetry.js` (`isTransientError` + `withRetry`, both pure and
@@ -164,7 +165,7 @@ intended to be surgical extensions of the existing systems (including the existi
 
 - **Mobile settings panel.** Added `src/UI/Components/MobileSettings/` (GUIComponent),
   a draggable panel that centralizes the RagnaTouch mobile toggles — haptics, UI
-  scale and auto-reconnect — each writing to the runtime config (and refreshing the
+  scale and left-handed layout — each writing to the runtime config (and refreshing the
   relevant module) and persisting via Preferences. Stored choices are re-applied to
   the config when the module loads, so they survive across sessions. Opened from a new
   🎛️ button in the MobileUI top bar. Render quality is intentionally left to the

@@ -16,7 +16,7 @@ existing systems, not a rewrite.
 
 See [`CHANGES.md`](./CHANGES.md) for the full, evidence-linked log. Highlights:
 
-- **Stability:** opt-in WebSocket auto-reconnect with exponential backoff; asset-load
+- **Stability:** asset-load
   retry for transient failures; (existing WebGL context-loss recovery audited).
 - **Performance:** adaptive graphics defaults (lower render scale / FPS on
   mobile / low-end); non-blocking startup; bundle code-split analysis in
@@ -50,7 +50,6 @@ exposed in the in-game **mobile settings panel** (🎛️ in the MobileUI top ba
 
 | Option | Default | Effect |
 | --- | --- | --- |
-| `autoReconnect` | `false` | Reconnect the WebSocket with backoff after an unexpected drop |
 | `assetMaxRetries` | `2` | Retries for transient (5xx / offline) asset-load failures |
 | `uiScale` | `'off'` | `'off'` / number / `'auto'` — scale fixed windows down for small screens |
 | `haptics` | `false` | Vibration feedback on touch actions |
@@ -74,7 +73,7 @@ The client alone is not a playable game. To reach a server you need:
 > No proprietary game assets (GRF, SPR, BGM, kRO data) are included in this repo — they
 > are supplied by the operator at runtime.
 
-On-device behaviour (touch input, rendering, install/offline, reconnect) must be
+On-device behaviour (touch input, rendering, install/offline) must be
 validated on a real phone; see the on-device checklist in `CHANGES.md` / the PR.
 
 ---

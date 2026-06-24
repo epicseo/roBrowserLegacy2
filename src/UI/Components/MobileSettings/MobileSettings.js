@@ -2,7 +2,7 @@
  * UI/Components/MobileSettings/MobileSettings.js
  *
  * Mobile settings panel — surfaces the RagnaTouch mobile/perf toggles in one
- * place: haptics, UI scale, render quality and auto-reconnect.
+ * place: haptics, UI scale and left-handed layout.
  *
  * Each control writes its value to the runtime config (and refreshes the
  * relevant module), and the choices are persisted via Preferences. Stored
@@ -33,7 +33,6 @@ const _preferences = Preferences.get(
 		y: 120,
 		haptics: false,
 		uiScale: 'off',
-		autoReconnect: false,
 		leftHanded: false
 	},
 	1.0
@@ -47,7 +46,6 @@ const _preferences = Preferences.get(
 function applyStored() {
 	Configs.set('haptics', !!_preferences.haptics);
 	Configs.set('uiScale', _preferences.uiScale);
-	Configs.set('autoReconnect', !!_preferences.autoReconnect);
 	Configs.set('mobileLeftHanded', !!_preferences.leftHanded);
 	UIScale.refresh();
 }
@@ -86,15 +84,6 @@ MobileSettings.init = function init() {
 		});
 	}
 
-	const reconnect = root.querySelector('#ms-reconnect');
-	if (reconnect) {
-		reconnect.addEventListener('change', function () {
-			_preferences.autoReconnect = this.checked;
-			Configs.set('autoReconnect', this.checked);
-			_preferences.save();
-		});
-	}
-
 	const leftHanded = root.querySelector('#ms-lefthanded');
 	if (leftHanded) {
 		leftHanded.addEventListener('change', function () {
@@ -126,7 +115,6 @@ MobileSettings.onAppend = function onAppend() {
 	};
 	set('#ms-haptics', 'checked', !!_preferences.haptics);
 	set('#ms-uiscale', 'value', String(_preferences.uiScale));
-	set('#ms-reconnect', 'checked', !!_preferences.autoReconnect);
 	set('#ms-lefthanded', 'checked', !!_preferences.leftHanded);
 };
 

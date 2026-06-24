@@ -34,12 +34,6 @@ window.ROConfigBase = {
 		// ADD PUBLIC TEST SERVERS HERE WITH _M _F REGISTRATION
 	],
 	packetDump: false,
-	// Auto-reconnect the WebSocket transport with exponential backoff after an
-	// unexpected disconnect (mobile networks drop often). Opt-in; default off.
-	// The transport reconnects, but restoring an in-game RO session also needs
-	// re-authentication — validate against your server before relying on it.
-	autoReconnect: false,
-	// autoReconnectOptions: { baseDelay: 1000, factor: 2, maxDelay: 30000, maxAttempts: Infinity, jitter: 0.25 },
 	// Retries for transient asset-load failures (5xx / offline blips). 4xx and
 	// missing files fail fast and are not retried. Set 0 to disable.
 	assetMaxRetries: 2,
