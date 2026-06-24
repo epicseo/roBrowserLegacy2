@@ -1,3 +1,84 @@
+# RagnaTouch
+
+**RagnaTouch** is a **mobile-first derivative** of
+[roBrowserLegacy](https://github.com/MrAntares/roBrowserLegacy) (itself a continuation
+of [roBrowser](https://www.robrowser.com/) by **Vincent Thibault** and contributors).
+It targets reliable touch/phone play plus measured gains in load speed, runtime
+stability, and a few mobile-first features — implemented as surgical extensions of the
+existing systems, not a rewrite.
+
+> **License & attribution.** RagnaTouch remains under the **GNU GPL v3** (see
+> [`LICENSE`](./LICENSE)); it is **not** relicensed. All original copyright and
+> source-file author headers are preserved. Original author: **Vincent Thibault** and
+> the roBrowser community. Upstream: roBrowserLegacy (MrAntares).
+
+## What's different (mobile-first)
+
+See [`CHANGES.md`](./CHANGES.md) for the full, evidence-linked log. Highlights:
+
+- **Stability:** opt-in WebSocket auto-reconnect with exponential backoff; asset-load
+  retry for transient failures; (existing WebGL context-loss recovery audited).
+- **Performance:** adaptive graphics defaults (lower render scale / FPS on
+  mobile / low-end); non-blocking startup; bundle code-split analysis in
+  [`doc/PERFORMANCE.md`](./doc/PERFORMANCE.md).
+- **PWA / offline:** offline app-shell service worker; complete installable icon set
+  (192 / 512 / maskable).
+- **Mobile UX:** capability-based touch detection, safe-area (notch) handling,
+  keyboard-safe chat input, opt-in responsive window scaling.
+- **Features:** FPS + ping HUD, opt-in haptics, a mobile settings panel, and a
+  left-handed layout option.
+
+## Build & run the mobile / PWA target
+
+```bash
+npm install            # Node >= 22
+npm run pwa            # Vite dev server for the PWA entry (applications/pwa/)
+npm run build:pwa      # Production PWA build -> dist/Web/ (Online + worker + manifest
+                       #   + icons + service worker)
+npm run build:all      # Build every application target
+npm test               # Vitest unit tests
+```
+
+Serve the built `dist/Web/` over **HTTPS** to install the PWA and exercise the service
+worker (offline app shell). The service worker is registered only in the built PWA, not
+the Vite dev server (to avoid HMR conflicts).
+
+### Mobile config options
+
+These live in `applications/pwa/Config.js` (or your `Config.local.js`) and are also
+exposed in the in-game **mobile settings panel** (🎛️ in the MobileUI top bar):
+
+| Option | Default | Effect |
+| --- | --- | --- |
+| `autoReconnect` | `false` | Reconnect the WebSocket with backoff after an unexpected drop |
+| `assetMaxRetries` | `2` | Retries for transient (5xx / offline) asset-load failures |
+| `uiScale` | `'off'` | `'off'` / number / `'auto'` — scale fixed windows down for small screens |
+| `haptics` | `false` | Vibration feedback on touch actions |
+| `mobileLeftHanded` | `false` | Mirror the joystick / action clusters (left-handed) |
+| `quality` | (adaptive) | Explicit render scale; unset → adaptive mobile/low-end default |
+
+### Connect to a server (local test path)
+
+The client alone is not a playable game. To reach a server you need:
+
+1. **wsProxy** — a TCP↔WebSocket proxy
+   ([roBrowserLegacy-wsProxy](https://github.com/MrAntares/roBrowserLegacy-wsProxy)).
+   Set `socketProxy` in the config (e.g. `ws://127.0.0.1:5999/`).
+2. **Game assets** — either a **Remote Client** serving GRF data
+   ([PHP](https://github.com/MrAntares/roBrowserLegacy-RemoteClient-PHP) /
+   [JS](https://github.com/FranciscoWallison/roBrowserLegacy-RemoteClient-JS); set
+   `remoteClient`), **or** local GRFs dragged into the Intro screen
+   (`skipIntro: false`).
+3. A **game server** (rAthena / Hercules) with matching `packetver`.
+
+> No proprietary game assets (GRF, SPR, BGM, kRO data) are included in this repo — they
+> are supplied by the operator at runtime.
+
+On-device behaviour (touch input, rendering, install/offline, reconnect) must be
+validated on a real phone; see the on-device checklist in `CHANGES.md` / the PR.
+
+---
+
 ## ROBrowser Legacy
 
 This is a continuation of [roBrowser](https://www.robrowser.com/) expanded with some features. This repo is not directly forked from the original repository due to safety concerns, but it is roBrowser.

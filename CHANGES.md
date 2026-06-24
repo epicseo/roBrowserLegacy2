@@ -176,6 +176,14 @@ intended to be surgical extensions of the existing systems (including the existi
   stronger pulse on skill-bar buttons, and an attack pulse. No-op on desktop or when
   unsupported/disabled. Documented in `applications/pwa/Config.js`.
 
+### Documentation
+
+- **README RagnaTouch section.** Prepended a RagnaTouch section to `README.md`: the
+  derivative identity + GPL-v3 notice + attribution, the mobile-first highlights, how
+  to build and run the PWA/mobile target, the mobile config options table, and the
+  local test path (wsProxy + Remote Client). The existing roBrowserLegacy README
+  content is preserved below it. Links `CHANGES.md` and `doc/PERFORMANCE.md`.
+
 ### Performance — investigation (no code change)
 
 - **Code-split investigation (measure-only).** Documented the bundle baseline and
