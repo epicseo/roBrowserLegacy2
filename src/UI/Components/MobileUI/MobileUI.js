@@ -21,6 +21,7 @@ import PathFinding from 'Utils/PathFinding.js';
 import Altitude from 'Renderer/Map/Altitude.js';
 import Events from 'Core/Events.js';
 import Haptics from 'Core/Haptics.js';
+import MobileSettings from 'UI/Components/MobileSettings/MobileSettings.js';
 import htmlText from './MobileUI.html?raw';
 import cssText from './MobileUI.css?raw';
 import glMatrix from 'Vendors/gl-matrix.js';
@@ -98,6 +99,10 @@ MobileUI.init = function init() {
 	});
 	bindButton(root, '#fullscreenButton', e => {
 		toggleFullScreen();
+		stopPropagation(e);
+	});
+	bindButton(root, '#settingsButton', e => {
+		MobileSettings.toggle();
 		stopPropagation(e);
 	});
 

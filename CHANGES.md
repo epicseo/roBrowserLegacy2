@@ -154,6 +154,14 @@ intended to be surgical extensions of the existing systems (including the existi
   `serverTick` adjustment, which is left untouched. Updates each pong (~10 s
   keepalive cadence); shows `--` until the first reply.
 
+- **Mobile settings panel.** Added `src/UI/Components/MobileSettings/` (GUIComponent),
+  a draggable panel that centralizes the RagnaTouch mobile toggles — haptics, UI
+  scale and auto-reconnect — each writing to the runtime config (and refreshing the
+  relevant module) and persisting via Preferences. Stored choices are re-applied to
+  the config when the module loads, so they survive across sessions. Opened from a new
+  🎛️ button in the MobileUI top bar. Render quality is intentionally left to the
+  existing GraphicsOption UI + the adaptive default, to avoid overriding it.
+
 - **Haptic feedback (opt-in).** Added `src/Core/Haptics.js`, a `navigator.vibrate`
   wrapper gated by capability + touch session + the `haptics` config (default off).
   Wired into MobileUI touch actions (`MobileUI.js`): light tap on button presses, a
