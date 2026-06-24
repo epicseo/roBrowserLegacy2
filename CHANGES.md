@@ -86,6 +86,16 @@ intended to be surgical extensions of the existing systems (including the existi
   `getJSON` helper and the GitHub dependency were removed. (The built PWA already used
   the builder-generated HTML, which never did this fetch.)
 
+- **Adaptive graphics defaults for mobile / low-end devices.** Added
+  `src/Core/DeviceCaps.js` (`recommendQuality`, pure + unit-tested; `detect`, which
+  reads pointer type / CPU cores / memory / DPR). `Preferences/Graphics.js` now seeds
+  its `quality` and `fpslimit` *defaults* from it, so a first-run phone gets a lower
+  render scale (and very low-end devices a lower FPS cap) automatically. These are
+  defaults only: a saved user preference (merged by `Preferences.get`) or an explicit
+  `quality` config always wins. `Renderer.resize` now falls back to the graphics
+  preference instead of a hardcoded 100, so the adaptive scale also applies when the
+  Intro is skipped. Unit coverage: `tests/core/DeviceCaps.test.js`.
+
 ### Stability
 
 - **WebSocket auto-reconnect with exponential backoff** (opt-in). Added a pure,
