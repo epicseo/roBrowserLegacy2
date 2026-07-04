@@ -17,6 +17,8 @@ import Sprite from 'Loaders/Sprite.js';
 import Action from 'Loaders/Action.js';
 import Str from 'Loaders/Str.js';
 import FileSystem from 'Core/FileSystem.js';
+import Configs from 'Core/Configs.js';
+import { withRetry } from 'Core/AssetRetry.js';
 
 // Load dependencies
 /* global process */
@@ -256,6 +258,22 @@ class FileManager {
 			url = FileManager.remoteClient + url;
 		}
 
+		// Retry transient failures (offline blips, 5xx) with exponential
+		// backoff; definitive failures (4xx / missing files) fail fast.
+		const maxRetries = Configs.get('assetMaxRetries', 2);
+		withRetry(cb => FileManager._getHTTPOnce(url, filename, cb), { maxRetries }, callback);
+	}
+
+	/**
+	 * A single attempt to load a file from the remote host (no retry).
+	 * Failure is reported as callback(null, message); the message carries the
+	 * HTTP status when known so the retry layer can classify it.
+	 *
+	 * @param {string} url
+	 * @param {string} filename
+	 * @param {function} callback
+	 */
+	static _getHTTPOnce(url, filename, callback) {
 		// Don't load mp3 sounds to avoid blocking the queue
 		// They can be load by the HTML5 Audio
 		if (filename.match(/\.(mp3|wav)$/)) {
@@ -283,8 +301,8 @@ class FileManager {
 					callback(buffer);
 					FileSystem.saveFile(filename, buffer);
 				})
-				.catch(() => {
-					callback(null, "Can't get file");
+				.catch(err => {
+					callback(null, err && err.message ? err.message : "Can't get file");
 				});
 			return;
 		}
@@ -298,18 +316,18 @@ class FileManager {
 				callback(xhr.response);
 				FileSystem.saveFile(filename, xhr.response);
 			} else {
-				callback(null, "Can't get file");
+				callback(null, 'HTTP ' + xhr.status);
 			}
 		};
 		xhr.onerror = () => {
-			callback(null, "Can't get file");
+			callback(null, 'network error');
 		};
 
 		// Can throw an error if not connected to internet
 		try {
 			xhr.send(null);
 		} catch (_e) {
-			callback(null, "Can't get file");
+			callback(null, 'network error');
 		}
 	}
 

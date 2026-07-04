@@ -8,6 +8,7 @@
 + */
 
 import Context from 'Core/Context.js';
+import Configs from 'Core/Configs.js';
 import UIManager from 'UI/UIManager.js';
 import GUIComponent from 'UI/GUIComponent.js';
 import Preferences from 'Core/Preferences.js';
@@ -20,6 +21,8 @@ import Network from 'Network/NetworkManager.js';
 import PathFinding from 'Utils/PathFinding.js';
 import Altitude from 'Renderer/Map/Altitude.js';
 import Events from 'Core/Events.js';
+import Haptics from 'Core/Haptics.js';
+import MobileSettings from 'UI/Components/MobileSettings/MobileSettings.js';
 import htmlText from './MobileUI.html?raw';
 import cssText from './MobileUI.css?raw';
 import glMatrix from 'Vendors/gl-matrix.js';
@@ -99,6 +102,10 @@ MobileUI.init = function init() {
 		toggleFullScreen();
 		stopPropagation(e);
 	});
+	bindButton(root, '#settingsButton', e => {
+		MobileSettings.toggle();
+		stopPropagation(e);
+	});
 
 	// F-key buttons
 	const fKeyMap = [
@@ -136,7 +143,7 @@ MobileUI.init = function init() {
 		['#yButton', 89],
 		['#uButton', 85],
 		['#iButton', 73],
-		['#oButton', 89],
+		['#oButton', 79],
 		['#aButton', 65],
 		['#sButton', 83],
 		['#dButton', 68],
@@ -203,14 +210,20 @@ MobileUI.init = function init() {
 	// Press effect for .buttons and .FButton
 	root.querySelectorAll('.buttons').forEach(btn => {
 		btn.addEventListener('mousedown', e => e.target.classList.add('pressed'));
-		btn.addEventListener('touchstart', e => e.target.classList.add('pressed'));
+		btn.addEventListener('touchstart', e => {
+			e.target.classList.add('pressed');
+			Haptics.play('tap');
+		});
 		btn.addEventListener('mouseup', e => e.target.classList.remove('pressed'));
 		btn.addEventListener('touchend', e => e.target.classList.remove('pressed'));
 	});
 
 	root.querySelectorAll('.FButton').forEach(btn => {
 		btn.addEventListener('mousedown', e => e.target.classList.add('pressed'));
-		btn.addEventListener('touchstart', e => e.target.classList.add('pressed'));
+		btn.addEventListener('touchstart', e => {
+			e.target.classList.add('pressed');
+			Haptics.play('skill');
+		});
 		btn.addEventListener('mouseup', e => e.target.classList.remove('pressed'));
 		btn.addEventListener('touchend', e => e.target.classList.remove('pressed'));
 	});
@@ -219,7 +232,23 @@ MobileUI.init = function init() {
 	setupJoystick();
 	// Initialize the NPC Talk Button - MicromeX
 	setupTalkToNpcButton();
+
+	// Apply the persisted on-screen layout (e.g. left-handed) and react to
+	// changes made from the mobile settings panel.
+	applyLayout();
+	window.addEventListener('ragnatouch:mobilelayout', applyLayout);
 };
+
+/**
+ * Apply the on-screen control layout from config (e.g. left-handed swap).
+ */
+function applyLayout() {
+	const root = MobileUI.getRoot();
+	const el = root && root.querySelector('#MobileUI');
+	if (el) {
+		el.classList.toggle('swap-controls', !!Configs.get('mobileLeftHanded', false));
+	}
+}
 
 /**
  * Logs the key press to the console and performs the key press action.
@@ -479,6 +508,7 @@ function toggleAutoFollow() {
  * Attacks a targeted enemy (if present)
  */
 function attackTargeted() {
+	Haptics.play('hit');
 	const main = Session.Entity;
 	let pkt;
 

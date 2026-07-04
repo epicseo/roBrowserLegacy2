@@ -14,6 +14,7 @@ import Mouse from 'Controls/MouseEventHandler.js';
 import UIPreferences from 'Preferences/UI.js';
 import Session from 'Engine/SessionStorage.js';
 import Targa from 'Loaders/Targa.js';
+import UIScale from 'UI/UIScale.js';
 
 /**
  * Heavy modules loaded lazily to keep viewer bundles lightweight.
@@ -285,6 +286,9 @@ UIComponent.prototype.append = function append(target) {
 
 	// Append UI content to the target element
 	this.ui.appendTo($target);
+
+	// Optional global UI scaling for small screens (no-op when uiScale unset).
+	UIScale.register(this.ui[0]);
 
 	if (this.onKeyDown) {
 		jQuery(window)

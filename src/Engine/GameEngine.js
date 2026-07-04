@@ -20,6 +20,7 @@ import Client from 'Core/Client.js';
 import Thread from 'Core/Thread.js';
 import Context from 'Core/Context.js';
 import LoginEngine from 'Engine/LoginEngine.js';
+import Session from 'Engine/SessionStorage.js';
 import Network from 'Network/NetworkManager.js';
 import Renderer from 'Renderer/Renderer.js';
 import MapRenderer from 'Renderer/MapRenderer.js';
@@ -166,6 +167,11 @@ class GameEngine {
 	 * Reload the game
 	 */
 	static reload() {
+		// Returning to the login screen ends the session: clear the in-memory session
+		// secret so a fresh AuthCode is negotiated on the next login and no stale
+		// credential lingers. (AuthCode is never persisted to storage.)
+		Session.AuthCode = 0;
+
 		BGM.setAvailableExtensions(Configs.get('BGMFileExtension', ['mp3']));
 		BGM.play('01.mp3');
 

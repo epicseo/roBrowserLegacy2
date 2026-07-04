@@ -19,6 +19,7 @@ import UIPreferences from 'Preferences/UI.js';
 import Session from 'Engine/SessionStorage.js';
 import Targa from 'Loaders/Targa.js';
 import ClampToViewport from 'UI/ClampToViewport.js';
+import UIScale from 'UI/UIScale.js';
 
 /**
  * Heavy modules loaded lazily to keep viewer bundles lightweight.
@@ -149,6 +150,9 @@ class GUIComponent {
 		this._host.id = this.name;
 		this._host.style.zIndex = '50';
 		this._host.style.position = 'absolute';
+
+		// Optional global UI scaling for small screens (no-op when uiScale unset).
+		UIScale.register(this._host);
 
 		// Attach Shadow DOM (open for devtools inspection)
 		this._shadow = this._host.attachShadow({ mode: 'open' });

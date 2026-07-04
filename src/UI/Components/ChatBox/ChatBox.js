@@ -21,6 +21,7 @@ import BattleMode from 'Controls/BattleMode.js';
 import History from './History.js';
 import UIManager from 'UI/UIManager.js';
 import GUIComponent from 'UI/GUIComponent.js';
+import bindKeyboardInset from 'UI/KeyboardInset.js';
 import 'UI/Elements/Elements.js';
 import ContextMenu from 'UI/Components/ContextMenu/ContextMenu.js';
 import htmlText from './ChatBox.html?raw';
@@ -294,6 +295,9 @@ ChatBox.init = function init() {
 		});
 
 		inputChatbox.maxLength = MAX_LENGTH;
+
+		// Keep the chat input visible above the virtual keyboard on touch devices.
+		bindKeyboardInset(inputChatbox, root.host);
 
 		inputChatbox.addEventListener('input', event => {
 			const currentText = extractChatMessage(inputChatbox);

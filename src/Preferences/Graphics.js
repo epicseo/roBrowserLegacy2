@@ -8,6 +8,12 @@
  * @author Vincent Thibault
  */
 import Preferences from 'Core/Preferences.js';
+import DeviceCaps from 'Core/DeviceCaps.js';
+
+// Adaptive defaults: lower render scale / FPS on mobile or low-end devices.
+// These are DEFAULTS only — a saved user preference (merged by Preferences.get
+// below) or an explicit `quality` config always takes precedence.
+const _adaptive = DeviceCaps.detect();
 
 const defaultGraphicsSettings = {
 	/**
@@ -17,9 +23,9 @@ const defaultGraphicsSettings = {
 
 	/*
 	 * Game quality detail
-	 * 100: Full
+	 * 100: Full (lowered automatically on mobile / low-end; see DeviceCaps)
 	 */
-	quality: 100,
+	quality: _adaptive.quality,
 
 	/**
 	 * Do we show official game cursor ?
@@ -27,9 +33,9 @@ const defaultGraphicsSettings = {
 	cursor: true,
 
 	/**
-	 * Game FPS Limit
+	 * Game FPS Limit (lowered automatically on very low-end devices)
 	 */
-	fpslimit: 60,
+	fpslimit: _adaptive.fpslimit,
 
 	/**
 	 * Performance Mode

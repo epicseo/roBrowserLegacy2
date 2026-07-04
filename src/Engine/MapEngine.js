@@ -170,6 +170,24 @@ class MapEngine {
 					return;
 				}
 
+				// Tier 2 reconnect (experimental, default off). Register the packets
+				// allowed on the zone socket before the map session is authenticated —
+				// this map-enter handshake and the keepalive ping — so the send-side
+				// auth gate lets them through pre-auth while refusing gameplay. When
+				// enabled, also offer a clean reconnect (re-run Login→Char→Map) on a
+				// drop. Inert by default: the gate and prompt do nothing unless the
+				// experimentalReconnect flag is on.
+				Network.setHandshakePackets([
+					PACKET.CZ.ENTER,
+					PACKET.CZ.ENTER2,
+					PACKET.CZ.REQUEST_TIME,
+					PACKET.CZ.REQUEST_TIME2,
+					PACKET.CZ.HBT
+				]);
+				if (Configs.get('experimentalReconnect', false)) {
+					Network.onDisconnect = onMapDisconnect;
+				}
+
 				// Success, try to login.
 				let pkt;
 				if (PACKETVER.value >= 20180307) {
@@ -222,6 +240,7 @@ class MapEngine {
 					}
 					SP.pingTime = ping.clientTime;
 					SP.returned = false;
+					SP.sentAt = Date.now(); // for the RTT measurement read by the HUD
 
 					Network.sendPacket(ping);
 				});
@@ -465,6 +484,12 @@ function onPong(pkt) {
 	SP.pongTime = 0;
 	SP.value = SP.pongTime - SP.pingTime;
 
+	// Measured round-trip time for the HUD. Kept separate from the (legacy)
+	// serverTick adjustment below so we don't disturb movement timing.
+	if (SP.sentAt) {
+		SP.rtt = Date.now() - SP.sentAt;
+	}
+
 	Session.serverTick = pkt.time + SP.value / 2; // Adjust with half ping
 }
 
@@ -554,6 +579,11 @@ function onReceiveAccountID(pkt) {
  * @param {object} pkt - PACKET.ZC.ACCEPT_ENTER
  */
 function onConnectionAccepted(pkt) {
+	// The map server has admitted the player: the session is now authenticated.
+	// This is the ONLY place the map session becomes authenticated; the send-side
+	// gate refuses gameplay sends until this point.
+	Network.setMapAuthenticated(true);
+
 	Session.Entity = new Entity(Session.Character);
 	Session.Entity.onWalkEnd = onWalkEnd;
 
@@ -613,6 +643,27 @@ function onConnectionAccepted(pkt) {
  */
 function onConnectionRefused(pkt) {
 	UIManager.showErrorBox(DB.getMessage(9)); // MSI_ACCESS_DENIED = Rejected from Server.
+}
+
+/**
+ * Experimental map reconnect (Approach B): handle an unexpected map-server drop by
+ * offering a clean reconnect that re-runs the full Login→Char→Map flow with a fresh
+ * AuthCode — no socket re-attach, no stored-token resume. This never bypasses the
+ * normal disconnect path: NetworkManager.onClose() has already de-authenticated the
+ * session (so the send-side gate now refuses gameplay), and GameEngine.reload()
+ * clears the in-memory AuthCode on the way back to login. One-shot, so the handler
+ * does not leak into a later login/char phase.
+ */
+function onMapDisconnect() {
+	Network.onDisconnect = null;
+	UIManager.showMessageBox(
+		'Connection to the map-server was lost. Returning to the login screen to reconnect.',
+		'ok',
+		() => {
+			import('Engine/GameEngine.js').then(m => m.default.reload());
+		},
+		true
+	);
 }
 
 /**

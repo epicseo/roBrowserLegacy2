@@ -1,7 +1,7 @@
 :host {
 	top: 100px;
 	left: 100px;
-	width: 80px;
+	width: 140px;
 	height: 20px;
 }
 
@@ -22,4 +22,8 @@
 #FPS .titlebar .left {
 	margin-left: 3px;
 	float: left;
+}
+#FPS .titlebar .right {
+	margin-right: 3px;
+	float: right;
 }

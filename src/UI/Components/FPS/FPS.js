@@ -20,6 +20,7 @@
 
 import Preferences from 'Core/Preferences.js';
 import Renderer from 'Renderer/Renderer.js';
+import Session from 'Engine/SessionStorage.js';
 import UIManager from 'UI/UIManager.js';
 import GUIComponent from 'UI/GUIComponent.js';
 import 'UI/Elements/Elements.js';
@@ -87,6 +88,7 @@ FPS.onAppend = function onAppend() {
 	const root = this.getRoot();
 	const fpsEl = root.querySelector('#fpsCounter');
 	const fpsRoot = root.querySelector('#FPS');
+	const pingEl = root.querySelector('#pingCounter');
 
 	let startTime = 0;
 	let frame = 0;
@@ -129,6 +131,12 @@ FPS.onAppend = function onAppend() {
 		if (cls !== lastClass) {
 			fpsRoot.style.color = FPS_COLORS[cls] || FPS_COLORS['fps-good'];
 			lastClass = cls;
+		}
+
+		// Round-trip latency (measured in MapEngine onPong; 0 until first pong).
+		if (pingEl) {
+			const rtt = (Session.ping && Session.ping.rtt) | 0;
+			pingEl.textContent = rtt > 0 ? rtt : '--';
 		}
 
 		startTime = time;

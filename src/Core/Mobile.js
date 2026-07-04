@@ -45,7 +45,32 @@ class Mobile {
 	/**
 	 * Initialize
 	 */
-	static init() {}
+	static init() {
+		// Flag primarily-touch devices up front (idempotent with the
+		// first-touch fallback) so the mobile UI is available immediately.
+		if (!Session.isTouchDevice && Mobile.isTouchDevice()) {
+			Session.isTouchDevice = true;
+		}
+	}
+
+	/**
+	 * Is this primarily a touch device (phone / tablet)?
+	 *
+	 * Uses the `(pointer: coarse)` media query, which targets devices whose
+	 * primary pointer is touch. Deliberately avoids `maxTouchPoints` /
+	 * `ontouchstart` on their own, which are also true on touch-capable laptops
+	 * where the user mainly uses a mouse — the first-touch handler remains as a
+	 * fallback for anything this misses.
+	 *
+	 * @return {boolean}
+	 */
+	static isTouchDevice() {
+		try {
+			return !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+		} catch (_e) {
+			return false;
+		}
+	}
 }
 
 /**
@@ -275,6 +300,13 @@ function touchDevice() {
 		//Already playing, don't wait for map change, just show it
 		MobileUI.show();
 	}
+}
+
+// Flag primarily-touch devices at load so the mobile UI can appear without
+// waiting for the first touch. Hybrid laptops (primary pointer = fine) are
+// intentionally excluded and still rely on the first-touch handler above.
+if (Mobile.isTouchDevice()) {
+	touchDevice();
 }
 
 // Touch controls

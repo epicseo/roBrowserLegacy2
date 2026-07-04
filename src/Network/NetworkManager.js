@@ -19,6 +19,7 @@ import PacketCrypt from './PacketCrypt.js';
 import PacketLength from './PacketLength.js';
 import WebSocket from './SocketHelpers/WebSocket.js';
 import NodeSocket from './SocketHelpers/NodeSocket.js';
+import SendGate from './SendGate.js';
 
 /**
  * Sockets list
@@ -68,6 +69,23 @@ let _save_buffer = null;
 let _onDisconnect = null;
 
 /**
+ * Map (zone) session authentication state — distinct from transport-connected.
+ * Becomes true ONLY when the map-accept (ACCEPT_ENTER) is processed, and false on
+ * every (re)connect and on disconnect. The send-side gate (sendPacket) refuses
+ * gameplay packets while this is false.
+ * @type {boolean}
+ */
+let _mapAuthenticated = false;
+
+/**
+ * Allowlist of packet constructors permitted on the zone socket before the map
+ * session is authenticated (the map-enter packet + the keepalive ping). Stored as
+ * constructors so the check is packetver-robust. Registered by MapEngine.
+ * @type {Set<Function>}
+ */
+let _handshakePackets = new Set();
+
+/**
  * Defines if dump packets as hex string
  * @const {boolean}
  */
@@ -102,6 +120,10 @@ Packets.list = [];
  * @param {boolean} is zone server ?
  */
 function connect(host, port, callback, isZone) {
+	// A fresh connection is never pre-authenticated: the map session only becomes
+	// authenticated once ACCEPT_ENTER is processed (see setMapAuthenticated).
+	_mapAuthenticated = false;
+
 	const socket = _socketFactory ? _socketFactory(host, port) : defaultSocketFactory(host, port);
 
 	socket.isZone = !!isZone;
@@ -139,6 +161,29 @@ function connect(host, port, callback, isZone) {
  * @param Packet
  */
 function sendPacket(Packet) {
+	// Send-side authentication gate (experimental, opt-in via experimentalReconnect).
+	// Refuses gameplay (zone) packets while the map session is not authenticated, so
+	// a dropped or not-yet-admitted zone socket can never carry gameplay traffic.
+	// Handshake packets (map enter + keepalive) and all non-zone (login/char) packets
+	// are always allowed. Inert when the flag is off (legacy behaviour).
+	if (
+		_socket &&
+		!SendGate.isSendAllowed({
+			enabled: Configs.get('experimentalReconnect', false),
+			isZone: !!_socket.isZone,
+			authenticated: _mapAuthenticated,
+			packetCtor: Packet ? Packet.constructor : null,
+			handshakePackets: _handshakePackets
+		})
+	) {
+		console.warn(
+			'%c[Network] Send refused — map session not authenticated:',
+			'color:#a00',
+			Packet && Packet.constructor ? Packet.constructor.name : Packet
+		);
+		return;
+	}
+
 	const pkt = Packet.build();
 
 	if (packetDump) {
@@ -355,6 +400,10 @@ function receive(buf) {
 function onClose() {
 	const idx = _sockets.indexOf(this);
 
+	// Transport closed: the map session is no longer authenticated. Gameplay sends
+	// are refused until a new session completes the map-accept handshake.
+	_mapAuthenticated = false;
+
 	if (this === _socket) {
 		console.warn('[Network] Disconnect from server');
 
@@ -382,6 +431,8 @@ function onClose() {
  */
 function close() {
 	let idx;
+
+	_mapAuthenticated = false;
 
 	if (_socket) {
 		const s = _socket;
@@ -423,6 +474,34 @@ function setPing(callback) {
 			}
 		}
 	}
+}
+
+/**
+ * Mark the map (zone) session authenticated / unauthenticated. Called with true by
+ * MapEngine when the map-accept (ACCEPT_ENTER) is processed — the only point a
+ * session becomes authenticated. The send-side gate keys off this state.
+ *
+ * @param {boolean} value
+ */
+function setMapAuthenticated(value) {
+	_mapAuthenticated = !!value;
+}
+
+/**
+ * @return {boolean} whether the map (zone) session is currently authenticated.
+ */
+function isMapAuthenticated() {
+	return _mapAuthenticated;
+}
+
+/**
+ * Register the packets allowed on the zone socket before authentication (the
+ * map-enter packet + the keepalive ping). Called by MapEngine during init.
+ *
+ * @param {Function[]} list - packet constructors
+ */
+function setHandshakePackets(list) {
+	_handshakePackets = new Set(Array.isArray(list) ? list.filter(Boolean) : []);
 }
 
 /**
@@ -487,6 +566,9 @@ const Network = (function network() {
 		sendPacket: sendPacket,
 		send: send,
 		setPing: setPing,
+		setMapAuthenticated: setMapAuthenticated,
+		isMapAuthenticated: isMapAuthenticated,
+		setHandshakePackets: setHandshakePackets,
 		connect: connect,
 		hookPacket: hookPacket,
 		close: close,

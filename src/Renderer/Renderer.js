@@ -287,7 +287,9 @@ class Renderer {
 		Mouse.screen.width = this.width = width;
 		Mouse.screen.height = this.height = height;
 
-		const quality = Configs.get('quality', 100) / 100;
+		// Explicit `quality` config wins; otherwise fall back to the graphics
+		// preference (which carries the adaptive mobile/low-end default).
+		const quality = Configs.get('quality', GraphicsSettings.quality) / 100;
 		width *= quality;
 		height *= quality;
 
