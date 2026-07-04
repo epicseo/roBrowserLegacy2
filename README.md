@@ -16,8 +16,9 @@ existing systems, not a rewrite.
 
 See [`CHANGES.md`](./CHANGES.md) for the full, evidence-linked log. Highlights:
 
-- **Stability:** asset-load
-  retry for transient failures; (existing WebGL context-loss recovery audited).
+- **Stability:** experimental, opt-in map (zone) **session reconnect** with a
+  send-side auth gate; asset-load retry for transient failures; (existing WebGL
+  context-loss recovery audited).
 - **Performance:** adaptive graphics defaults (lower render scale / FPS on
   mobile / low-end); non-blocking startup; bundle code-split analysis in
   [`doc/PERFORMANCE.md`](./doc/PERFORMANCE.md).
@@ -50,6 +51,7 @@ exposed in the in-game **mobile settings panel** (🎛️ in the MobileUI top ba
 
 | Option | Default | Effect |
 | --- | --- | --- |
+| `experimentalReconnect` | `false` | **Experimental** (server-validation-gated): map-session reconnect + send-side auth gate. On an unexpected drop, re-runs login; refuses gameplay packets until the map session is re-authenticated |
 | `assetMaxRetries` | `2` | Retries for transient (5xx / offline) asset-load failures |
 | `uiScale` | `'off'` | `'off'` / number / `'auto'` — scale fixed windows down for small screens |
 | `haptics` | `false` | Vibration feedback on touch actions |
